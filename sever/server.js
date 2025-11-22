@@ -11,6 +11,17 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// CORS đơn giản cho mobile/web
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Serve static files từ thư mục uploads
 app.use('/uploads', express.static('uploads'));
 
@@ -53,8 +64,11 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // Lắng nghe trên tất cả interfaces
 
-app.listen(PORT, () => {
-  console.log(`Server đang chạy trên port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`✅ Server đang chạy trên http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
+  console.log(`📱 Android emulator có thể kết nối qua: http://10.0.2.2:${PORT}`);
+  console.log(`🌐 Network access: http://localhost:${PORT}`);
 });
 
