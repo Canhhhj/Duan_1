@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 
 const router = express.Router();
@@ -30,21 +31,51 @@ router.get('/', async (req, res) => {
 });
 
 // Đơn hàng theo người dùng
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId/list', async (req, res) => {
   try {
+    const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json(buildResponse(false, 'User ID không hợp lệ'));
+    }
+
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.max(parseInt(req.query.limit || '10', 10), 1);
+    const status = (req.query.status || '').trim();
+
+    const filter = { user: userId };
+    if (status) filter.status = status;
+
+    const total = await Order.countDocuments(filter);
     const orders = await populateOrder(
-      Order.find({ user: req.params.userId }).sort({ createdAt: -1 })
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
     );
-    res.json(buildResponse(true, 'Danh sách đơn hàng của người dùng', orders));
+
+    res.json(
+      buildResponse(true, 'Danh sách đơn hàng của người dùng', {
+        items: orders,
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+        filter: { status: status || undefined }
+      })
+    );
   } catch (error) {
     res.status(500).json(buildResponse(false, error.message));
   }
 });
 
 // Chi tiết đơn hàng
-router.get('/:id', async (req, res) => {
+router.get('/detail/:id', async (req, res) => {
   try {
-    const order = await populateOrder(Order.findById(req.params.id));
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'Order ID không hợp lệ'));
+    }
+    const order = await populateOrder(Order.findById(id));
     if (!order) {
       return res.status(404).json(buildResponse(false, 'Không tìm thấy đơn hàng'));
     }
