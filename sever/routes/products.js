@@ -1,5 +1,6 @@
 const express = require('express');
 const Product = require('../models/Product');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -100,6 +101,124 @@ router.get('/latest', async (req, res) => {
   }
 });
 
+// Xem media của sản phẩm (ảnh và video)
+router.get('/:id/media', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'ID không hợp lệ'));
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+    }
+    res.json(
+      buildResponse(true, 'Media sản phẩm', {
+        image: product.image || null,
+        images: product.images || [],
+        videos: product.videos || []
+      })
+    );
+  } catch (error) {
+    res.status(500).json(buildResponse(false, error.message));
+  }
+});
+
+// Thêm ảnh vào gallery sản phẩm (paths từ /api/upload)
+router.post('/:id/images', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paths } = req.body; // mảng đường dẫn ảnh
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'ID không hợp lệ'));
+    }
+    if (!Array.isArray(paths) || paths.length === 0) {
+      return res.status(400).json(buildResponse(false, 'Vui lòng truyền mảng paths ảnh'));
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+    }
+    product.images = [...(product.images || []), ...paths];
+    product.updatedAt = new Date();
+    await product.save();
+    res.status(201).json(buildResponse(true, 'Đã thêm ảnh vào gallery', product));
+  } catch (error) {
+    res.status(400).json(buildResponse(false, error.message));
+  }
+});
+
+// Thêm video vào sản phẩm (URL hoặc paths từ /api/upload/video)
+router.post('/:id/videos', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { urls } = req.body; // mảng đường dẫn hoặc URL video
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'ID không hợp lệ'));
+    }
+    if (!Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json(buildResponse(false, 'Vui lòng truyền mảng urls video'));
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+    }
+    product.videos = [...(product.videos || []), ...urls];
+    product.updatedAt = new Date();
+    await product.save();
+    res.status(201).json(buildResponse(true, 'Đã thêm video cho sản phẩm', product));
+  } catch (error) {
+    res.status(400).json(buildResponse(false, error.message));
+  }
+});
+
+// Xóa ảnh khỏi gallery sản phẩm theo path
+router.delete('/:id/images', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { path } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'ID không hợp lệ'));
+    }
+    if (!path) {
+      return res.status(400).json(buildResponse(false, 'Vui lòng truyền path ảnh cần xóa'));
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+    }
+    product.images = (product.images || []).filter((p) => p !== path);
+    product.updatedAt = new Date();
+    await product.save();
+    res.json(buildResponse(true, 'Đã xóa ảnh khỏi gallery', product));
+  } catch (error) {
+    res.status(400).json(buildResponse(false, error.message));
+  }
+});
+
+// Xóa video khỏi sản phẩm theo url/path
+router.delete('/:id/videos', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json(buildResponse(false, 'ID không hợp lệ'));
+    }
+    if (!url) {
+      return res.status(400).json(buildResponse(false, 'Vui lòng truyền url video cần xóa'));
+    }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+    }
+    product.videos = (product.videos || []).filter((u) => u !== url);
+    product.updatedAt = new Date();
+    await product.save();
+    res.json(buildResponse(true, 'Đã xóa video khỏi sản phẩm', product));
+  } catch (error) {
+    res.status(400).json(buildResponse(false, error.message));
+  }
+});
 // Thêm sản phẩm
 router.post('/', async (req, res) => {
   try {
