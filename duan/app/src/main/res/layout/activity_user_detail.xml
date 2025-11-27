@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp">
+
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_revert"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Chi tiết người dùng"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:gravity="center" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/gray_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ID: 123"
+                        android:textSize="14sp"
+                        android:textColor="@color/dark_gray" />
+
+                    <TextView
+                        android:id="@+id/tv_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tên: Nguyễn Văn A"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Email: email@example.com"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="6dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_role"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Admin"
+                        app:chipCornerRadius="16dp"
+                        app:chipMinHeight="32dp"
+                        android:layout_marginTop="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_created_at"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Ngày tạo: 12/10/2025 12:30"
+                        android:textSize="14sp"
+                        android:textColor="@color/dark_gray"
+                        android:layout_marginTop="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_updated_at"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cập nhật: 15/10/2025 09:10"
+                        android:textSize="14sp"
+                        android:textColor="@color/dark_gray"
+                        android:layout_marginTop="6dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
