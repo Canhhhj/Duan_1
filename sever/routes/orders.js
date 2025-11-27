@@ -85,6 +85,124 @@ router.get('/detail/:id', async (req, res) => {
   }
 });
 
+// Top sản phẩm bán chạy
+router.get('/top-products', async (req, res) => {
+  try {
+    const limit = Math.max(parseInt(req.query.limit || '5', 10), 1);
+    const status = (req.query.status || 'delivered').trim();
+    const start = req.query.start ? new Date(req.query.start) : null;
+    const end = req.query.end ? new Date(req.query.end) : null;
+
+    const match = {};
+    if (status) match.status = status;
+    if (start || end) match.createdAt = {};
+    if (start) match.createdAt.$gte = start;
+    if (end) match.createdAt.$lte = end;
+
+    const results = await Order.aggregate([
+      { $match: match },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.product',
+          totalQty: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          revenue: { $sum: { $multiply: [{ $ifNull: ['$items.quantity', 0] }, { $ifNull: ['$items.price', 0] }] } },
+          orderIds: { $addToSet: '$_id' }
+        }
+      },
+      { $project: { totalQty: 1, revenue: 1, orderCount: { $size: '$orderIds' } } },
+      { $sort: { totalQty: -1, revenue: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      { $unwind: '$product' },
+      {
+        $project: {
+          product: { _id: '$product._id', name: '$product.name', image: '$product.image', price: '$product.price' },
+          totalQty: 1,
+          revenue: 1,
+          orderCount: 1
+        }
+      }
+    ]);
+
+    res.json(
+      buildResponse(true, 'Top sản phẩm bán chạy', {
+        items: results,
+        limit,
+        filter: { status: status || undefined, start: start || undefined, end: end || undefined }
+      })
+    );
+  } catch (error) {
+    res.status(500).json(buildResponse(false, error.message));
+  }
+});
+
+// Top khách hàng
+router.get('/top-customers', async (req, res) => {
+  try {
+    const limit = Math.max(parseInt(req.query.limit || '5', 10), 1);
+    const status = (req.query.status || 'delivered').trim();
+    const start = req.query.start ? new Date(req.query.start) : null;
+    const end = req.query.end ? new Date(req.query.end) : null;
+
+    const match = {};
+    if (status) match.status = status;
+    if (start || end) match.createdAt = {};
+    if (start) match.createdAt.$gte = start;
+    if (end) match.createdAt.$lte = end;
+
+    const results = await Order.aggregate([
+      { $match: match },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$user',
+          totalItems: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          revenue: { $sum: { $multiply: [{ $ifNull: ['$items.quantity', 0] }, { $ifNull: ['$items.price', 0] }] } },
+          orderIds: { $addToSet: '$_id' }
+        }
+      },
+      { $project: { totalItems: 1, revenue: 1, orderCount: { $size: '$orderIds' } } },
+      { $sort: { revenue: -1, orderCount: -1, totalItems: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          user: { _id: '$user._id', name: '$user.name', email: '$user.email' },
+          totalItems: 1,
+          revenue: 1,
+          orderCount: 1
+        }
+      }
+    ]);
+
+    res.json(
+      buildResponse(true, 'Top khách hàng', {
+        items: results,
+        limit,
+        filter: { status: status || undefined, start: start || undefined, end: end || undefined }
+      })
+    );
+  } catch (error) {
+    res.status(500).json(buildResponse(false, error.message));
+  }
+});
+
 // Tạo đơn hàng
 router.post('/', async (req, res) => {
   try {
