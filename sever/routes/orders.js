@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 
 const router = express.Router();
 
@@ -210,6 +211,24 @@ router.post('/', async (req, res) => {
 
     if (!user || !items || items.length === 0 || !shippingAddress) {
       return res.status(400).json(buildResponse(false, 'Thiếu thông tin đơn hàng'));
+    }
+
+    for (const it of items) {
+      const p = await Product.findById(it.product);
+      if (!p) {
+        return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
+      }
+      const qty = Math.max(parseInt(it.quantity || '0', 10), 0);
+      if (p.stock < qty) {
+        return res.status(400).json(buildResponse(false, 'Số lượng tồn kho không đủ'));
+      }
+    }
+
+    for (const it of items) {
+      const p = await Product.findById(it.product);
+      const qty = Math.max(parseInt(it.quantity || '0', 10), 0);
+      p.stock = Math.max((p.stock || 0) - qty, 0);
+      await p.save();
     }
 
     const order = await Order.create({

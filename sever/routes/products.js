@@ -12,10 +12,40 @@ const buildResponse = (success, message, data = null) => ({
 // Danh sách sản phẩm
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find()
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.max(parseInt(req.query.limit || '10', 10), 1);
+    const search = (req.query.q || '').trim();
+    const category = (req.query.category || '').trim();
+    const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : undefined;
+    const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined;
+    const sortBy = (req.query.sortBy || 'createdAt');
+    const order = (req.query.order || 'desc').toLowerCase() === 'asc' ? 1 : -1;
+
+    const filter = {};
+    if (search) filter.name = { $regex: search, $options: 'i' };
+    if (category) filter.category = category;
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+      if (minPrice !== undefined) filter.price.$gte = minPrice;
+      if (maxPrice !== undefined) filter.price.$lte = maxPrice;
+    }
+
+    const total = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
       .populate('category', 'name')
-      .sort({ createdAt: -1 });
-    res.json(buildResponse(true, 'Danh sách sản phẩm', products));
+      .sort({ [sortBy]: order })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json(buildResponse(true, 'Danh sách sản phẩm', {
+      items: products,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+      filter: { q: search || undefined, category: category || undefined, minPrice, maxPrice },
+      sort: { by: sortBy, order: order === 1 ? 'asc' : 'desc' }
+    }));
   } catch (error) {
     res.status(500).json(buildResponse(false, error.message));
   }
@@ -29,6 +59,42 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json(buildResponse(false, 'Không tìm thấy sản phẩm'));
     }
     res.json(buildResponse(true, 'Chi tiết sản phẩm', product));
+  } catch (error) {
+    res.status(500).json(buildResponse(false, error.message));
+  }
+});
+
+router.get('/category/:categoryId', async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.max(parseInt(req.query.limit || '10', 10), 1);
+    const total = await Product.countDocuments({ category: categoryId });
+    const products = await Product.find({ category: categoryId })
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    res.json(buildResponse(true, 'Sản phẩm theo danh mục', {
+      items: products,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit)
+    }));
+  } catch (error) {
+    res.status(500).json(buildResponse(false, error.message));
+  }
+});
+
+router.get('/latest', async (req, res) => {
+  try {
+    const limit = Math.max(parseInt(req.query.limit || '10', 10), 1);
+    const products = await Product.find()
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+    res.json(buildResponse(true, 'Sản phẩm mới nhất', products));
   } catch (error) {
     res.status(500).json(buildResponse(false, error.message));
   }
