@@ -32,6 +32,7 @@ const categoriesRoutes = require('./routes/categories');
 const ordersRoutes = require('./routes/orders');
 const reviewsRoutes = require('./routes/reviews');
 const favoritesRoutes = require('./routes/favorites');
+const cartRoutes = require('./routes/cart');
 const vouchersRoutes = require('./routes/vouchers');
 const uploadRoutes = require('./routes/upload');
 
@@ -43,6 +44,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/vouchers', vouchersRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/v1/cart', cartRoutes);
 
 // Route chính
 app.get('/', (req, res) => {
@@ -71,4 +73,3 @@ app.listen(PORT, HOST, () => {
   console.log(`📱 Android emulator có thể kết nối qua: http://10.0.2.2:${PORT}`);
   console.log(`🌐 Network access: http://localhost:${PORT}`);
 });
-
