@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/duan1');
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    const dbName = process.env.MONGODB_DB || 'duan1';
+    const conn = await mongoose.connect(uri, { dbName });
 
     console.log(`Kết nối thành công`);
     console.log(`Database: ${conn.connection.name}`);
@@ -14,4 +16,3 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
-

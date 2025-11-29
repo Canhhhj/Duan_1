@@ -62,7 +62,7 @@ public class UserDetailActivity extends AppCompatActivity {
     }
 
     private void bind(User user) {
-        binding.tvId.setText("ID: " + safe(user.getId()));
+        binding.chipId.setText("#" + safe(user.getId()));
         binding.tvName.setText("Tên: " + safe(user.getName()));
         binding.tvEmail.setText("Email: " + safe(user.getEmail()));
         binding.chipRole.setText(safe(user.getRole()));

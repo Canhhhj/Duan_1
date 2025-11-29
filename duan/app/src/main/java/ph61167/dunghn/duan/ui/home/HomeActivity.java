@@ -56,6 +56,11 @@ public class HomeActivity extends AppCompatActivity {
             sessionManager.clearSession();
             navigateToLogin();
         });
+
+        binding.ivCart.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ph61167.dunghn.duan.ui.cart.CartActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void setupBottomNavigation() {
@@ -65,8 +70,8 @@ public class HomeActivity extends AppCompatActivity {
                 // Đã ở trang chủ
                 return true;
             } else if (itemId == ph61167.dunghn.duan.R.id.nav_cart) {
-                // TODO: Chuyển đến trang giỏ hàng
-                Toast.makeText(this, "Tính năng giỏ hàng đang phát triển", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, ph61167.dunghn.duan.ui.cart.CartActivity.class);
+                startActivity(intent);
                 return true;
             } else if (itemId == ph61167.dunghn.duan.R.id.nav_orders) {
                 Intent intent = new Intent(this, ph61167.dunghn.duan.ui.orders.OrdersActivity.class);

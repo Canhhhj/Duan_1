@@ -3,7 +3,7 @@ package ph61167.dunghn.duan.data.model;
 import com.google.gson.annotations.SerializedName;
 
 public class User {
-    @SerializedName("id")
+    @SerializedName(value = "_id", alternate = {"id"})
     private String id;
     private String name;
     private String email;

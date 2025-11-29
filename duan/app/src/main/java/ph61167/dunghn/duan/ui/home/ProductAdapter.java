@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 import ph61167.dunghn.duan.data.model.Product;
+import com.bumptech.glide.Glide;
 import ph61167.dunghn.duan.databinding.ItemProductBinding;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
@@ -60,7 +61,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         void bind(Product product, NumberFormat format) {
             binding.tvProductName.setText(product.getName());
             binding.tvProductPrice.setText(format.format(product.getPrice()));
-            binding.ivProduct.setImageResource(ph61167.dunghn.duan.R.drawable.img);
+            Glide.with(binding.ivProduct.getContext())
+                    .load(product.getImage())
+                    .placeholder(ph61167.dunghn.duan.R.drawable.img)
+                    .error(ph61167.dunghn.duan.R.drawable.img)
+                    .into(binding.ivProduct);
+            binding.getRoot().setOnClickListener(v -> {
+                android.content.Context ctx = v.getContext();
+                android.content.Intent i = new android.content.Intent(ctx, ph61167.dunghn.duan.ui.product.ProductDetailActivity.class);
+                i.putExtra("product_id", product.getId());
+                i.putExtra("product_name", product.getName());
+                i.putExtra("product_description", product.getDescription());
+                i.putExtra("product_price", product.getPrice());
+                i.putExtra("product_image", product.getImage());
+                ctx.startActivity(i);
+            });
         }
     }
 }

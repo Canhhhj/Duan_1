@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 import ph61167.dunghn.duan.data.model.OrderDetail;
+import com.bumptech.glide.Glide;
 import ph61167.dunghn.duan.databinding.ItemOrderDetailLineBinding;
 
 public class OrderItemsAdapter extends RecyclerView.Adapter<OrderItemsAdapter.ItemViewHolder> {
@@ -55,7 +56,22 @@ public class OrderItemsAdapter extends RecyclerView.Adapter<OrderItemsAdapter.It
             binding.tvName.setText(item.getProduct() != null ? item.getProduct().getName() : "");
             binding.tvUnitPrice.setText("Đơn giá: " + fmt.format(item.getPrice()));
             binding.tvQuantity.setText("Số lượng: " + item.getQuantity());
-            binding.ivImage.setImageResource(ph61167.dunghn.duan.R.drawable.img);
+            String image = item.getProduct() != null ? item.getProduct().getImage() : null;
+            Glide.with(binding.ivImage.getContext())
+                    .load(image)
+                    .placeholder(ph61167.dunghn.duan.R.drawable.img)
+                    .error(ph61167.dunghn.duan.R.drawable.img)
+                    .into(binding.ivImage);
+            binding.getRoot().setOnClickListener(v -> {
+                String name = item.getProduct() != null ? item.getProduct().getName() : "";
+                android.content.Context ctx = v.getContext();
+                android.content.Intent i = new android.content.Intent(ctx, ph61167.dunghn.duan.ui.product.ProductDetailActivity.class);
+                i.putExtra("product_name", name);
+                i.putExtra("product_price", item.getPrice());
+                i.putExtra("product_description", "");
+                i.putExtra("product_image", image);
+                ctx.startActivity(i);
+            });
         }
     }
 }
