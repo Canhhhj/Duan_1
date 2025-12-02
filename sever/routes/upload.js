@@ -76,5 +76,62 @@ router.post('/multiple', upload.array('images', 10), (req, res) => {
   }
 });
 
+// Lọc upload video
+const videoFileFilter = (req, file, cb) => {
+  const allowedTypes = /mp4|webm|ogg|mov|mkv/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype.toLowerCase());
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Chỉ cho phép upload video (mp4, webm, ogg, mov, mkv)'));
+  }
+};
+
+const uploadVideo = multer({
+  storage: storage,
+  limits: {
+    fileSize: 200 * 1024 * 1024 // 200MB
+  },
+  fileFilter: videoFileFilter
+});
+
+// Upload 1 video
+router.post('/video', uploadVideo.single('video'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Không có video được upload' });
+    }
+    res.json({
+      message: 'Upload video thành công',
+      filename: req.file.filename,
+      path: `/uploads/${req.file.filename}`,
+      size: req.file.size
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload nhiều video
+router.post('/video/multiple', uploadVideo.array('videos', 5), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'Không có video được upload' });
+    }
+    const files = req.files.map(file => ({
+      filename: file.filename,
+      path: `/uploads/${file.filename}`,
+      size: file.size
+    }));
+    res.json({
+      message: `Upload ${files.length} video thành công`,
+      files
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
 
